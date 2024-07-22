@@ -1,4 +1,4 @@
-package com.breakbounce.gamezapp;
+package com.studiosolara.tappyfly;
 
 import android.content.Context;
 import android.content.Intent;

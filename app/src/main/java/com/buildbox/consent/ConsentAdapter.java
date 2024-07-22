@@ -11,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.breakbounce.gamezapp.R;
+import com.studiosolara.tappyfly.R;
 
 import java.util.List;
 

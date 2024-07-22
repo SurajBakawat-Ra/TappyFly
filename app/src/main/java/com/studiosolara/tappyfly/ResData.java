@@ -1,8 +1,8 @@
-package com.breakbounce.gamezapp;
+package com.studiosolara.tappyfly;
 
 import android.content.Context;
 
-import static com.breakbounce.gamezapp.BuildConfig.*;
+import static com.studiosolara.tappyfly.BuildConfig.*;
 
 public class ResData {
 
