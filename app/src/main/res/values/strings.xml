@@ -16,7 +16,7 @@
     <!-- CAUTION: DON'T CHANGE ANY VALUES BELOW  -->
     <string name="app_id"></string>
     <string name="bb_version">2.23.9</string>
-    <string name="no_to_all"><u>NO TO ALl</u></string>
+    <string name="no_to_all"><u>NO TO ALL</u></string>
     <string name="consent_dialog_explanation_text">Do you consent to share your personal information with advertisers? We personalize your advertising experience using ad networks, and we track some basic in-game events for developer analytics. By giving your consent to this improved ad experience, you\'ll see more advertisements relevant to your interests.</string>
     <string name="yes_to_all">YES TO ALL</string>
     <string name="consent_to_targeted_advertising">CONSENT TO TARGETED ADVERTISING?</string>
