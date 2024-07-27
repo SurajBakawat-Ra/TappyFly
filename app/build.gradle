@@ -9,13 +9,13 @@ android {
     buildToolsVersion '30.0.3'
 
     defaultConfig {
-        applicationId "com.studiosolara.tappyfly"
+        applicationId "com.solaragames.tappyfly"
         minSdkVersion 21
         targetSdkVersion 34
         multiDexEnabled true
 
         versionCode 2
-        versionName "1.1"
+        versionName "R2"
 
         ndk {
             moduleName "player_shared"

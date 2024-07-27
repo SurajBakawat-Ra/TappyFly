@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.studiosolara.tappyfly.R;
+import com.solaragames.tappyfly.R;
 
 import java.util.List;
 

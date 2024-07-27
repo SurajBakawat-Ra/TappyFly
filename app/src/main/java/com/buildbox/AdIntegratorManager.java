@@ -9,7 +9,7 @@ import android.widget.Toast;
 import androidx.preference.PreferenceManager;
 
 import com.apponboard.aob_sessionreporting.AOBReporting;
-import com.studiosolara.tappyfly.ResData;
+import com.solaragames.tappyfly.ResData;
 import com.buildbox.consent.ConsentHelper;
 import com.buildbox.consent.SdkConsentInfo;
 import com.secrethq.utils.PTJniHelper;

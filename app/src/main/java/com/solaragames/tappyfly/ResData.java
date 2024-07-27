@@ -1,8 +1,8 @@
-package com.studiosolara.tappyfly;
+package com.solaragames.tappyfly;
 
 import android.content.Context;
 
-import static com.studiosolara.tappyfly.BuildConfig.*;
+import static com.solaragames.tappyfly.BuildConfig.*;
 
 public class ResData {
 

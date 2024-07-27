@@ -1,4 +1,4 @@
-package com.studiosolara.tappyfly;
+package com.solaragames.tappyfly;
 
 import android.content.Context;
 import android.content.Intent;

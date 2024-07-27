@@ -10,8 +10,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.studiosolara.tappyfly.PTPlayer;
-import com.studiosolara.tappyfly.R;
+import com.solaragames.tappyfly.PTPlayer;
+import com.solaragames.tappyfly.R;
 
 import java.util.List;
 
