@@ -5,20 +5,39 @@ plugins {
 }
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion '30.0.3'
+    namespace 'com.solaragames.tappyfly'
+    compileSdk 36
+    buildToolsVersion '36.0.0'
 
     defaultConfig {
         applicationId "com.solaragames.tappyfly"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 36
         multiDexEnabled true
 
-        versionCode 2
-        versionName "R2"
+        versionCode 3
+        versionName "R3"
+    }
 
-        ndk {
-            moduleName "player_shared"
+    buildFeatures {
+        aidl true
+        buildConfig true
+    }
+
+    def keystorePropertiesFile = rootProject.file("key.properties")
+    def keystoreProperties = new Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
         }
     }
 
@@ -26,23 +45,105 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
-    android {
-        packagingOptions {
-            exclude 'META-INF/proguard/androidx-annotations.pro'
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    packaging {
+        resources {
+            excludes += 'META-INF/proguard/androidx-annotations.pro'
         }
     }
 }
 
+// ---------------------------------------------------------------------------
+// 16 KB page size support.
+// The prebuilt Buildbox engine library (jniLibs/libplayer.so) was linked with
+// 4 KB page alignment (PT_LOAD p_align = 0x1000). Google Play rejects bundles
+// that ship 4 KB aligned 64-bit libraries, and such libraries fail to load on
+// 16 KB page devices. We cannot rebuild the engine, so the PT_LOAD alignment
+// field of each segment is raised to 16 KB (0x4000) on a copy of the libraries.
+// Segment file offsets are congruent with their virtual addresses, so the
+// dynamic linker maps them correctly on both 4 KB and 16 KB page devices.
+// ---------------------------------------------------------------------------
+def jniLibs16kDir = layout.buildDirectory.dir("generated/jniLibs16k").get().asFile
+android.sourceSets.main.jniLibs.srcDirs = [jniLibs16kDir]
+
+def readLittleEndian(byte[] bytes, int offset, int size) {
+    long value = 0
+    for (int i = size - 1; i >= 0; i--) {
+        value = (value << 8) | (bytes[offset + i] & 0xFFL)
+    }
+    return value
+}
+
+def writeLittleEndian(byte[] bytes, int offset, int size, long value) {
+    for (int i = 0; i < size; i++) {
+        bytes[offset + i] = (byte) ((value >>> (8 * i)) & 0xFFL)
+    }
+}
+
+tasks.register("patchNativeLibs16k") {
+    description = "Copies jniLibs and raises ELF PT_LOAD alignment to 16 KB where needed."
+    def sourceDir = file("src/main/jniLibs")
+    inputs.dir(sourceDir)
+    outputs.dir(jniLibs16kDir)
+
+    doLast {
+        jniLibs16kDir.deleteDir()
+        copy {
+            from sourceDir
+            into jniLibs16kDir
+        }
+        int patched = 0
+        jniLibs16kDir.eachFileRecurse { f ->
+            if (!f.isFile() || !f.name.endsWith(".so")) {
+                return
+            }
+            byte[] bytes = f.bytes
+            boolean is64Bit = bytes[4] == 2
+            int headerOffset = (int) readLittleEndian(bytes, is64Bit ? 0x20 : 0x1C, is64Bit ? 8 : 4)
+            int entrySize = (int) readLittleEndian(bytes, is64Bit ? 0x36 : 0x2A, 2)
+            int entryCount = (int) readLittleEndian(bytes, is64Bit ? 0x38 : 0x2C, 2)
+            boolean changed = false
+            for (int i = 0; i < entryCount; i++) {
+                int entryOffset = headerOffset + (i * entrySize)
+                if (readLittleEndian(bytes, entryOffset, 4) != 1) {
+                    continue // not PT_LOAD
+                }
+                int alignOffset = entryOffset + (is64Bit ? 48 : 28)
+                int alignSize = is64Bit ? 8 : 4
+                if (readLittleEndian(bytes, alignOffset, alignSize) < 0x4000) {
+                    writeLittleEndian(bytes, alignOffset, alignSize, 0x4000)
+                    changed = true
+                }
+            }
+            if (changed) {
+                f.bytes = bytes
+                patched++
+            }
+        }
+        logger.lifecycle("16 KB ELF alignment applied to ${patched} native librar${patched == 1 ? 'y' : 'ies'}.")
+    }
+}
+
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
+    dependsOn "patchNativeLibs16k"
+}
+
 dependencies {
-    implementation("com.android.billingclient:billing-ktx:7.0.0"){
+    implementation("com.android.billingclient:billing:8.0.0") {
         exclude group: 'javax.inject', module: 'javax.inject'
     }
     implementation 'com.github.d-max:spots-dialog:1.1@aar'
